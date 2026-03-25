@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Password Generator</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: linear-gradient(135deg, #ffffff, #ffffff);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  color: white;
+}
+
+.container {
+  background: rgba(132, 132, 132, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  width: 320px;
+}
+
+input, button {
+  padding: 10px;
+  margin: 8px;
+  border-radius: 8px;
+  border: none;
+}
+
+button {
+  cursor: pointer;
+  background: #959595;
+  color: white;
+}
+
+.result {
+  background: rgba(0,0,0,0.2);
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+  word-break: break-all;
+}
+
+.modal {
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background: rgba(0,0,0,0.7);
+  justify-content:center;
+  align-items:center;
+}
+
+.modal-content {
+  background:white;
+  color:black;
+  padding:20px;
+  border-radius:10px;
+  width:350px;
+  max-height:400px;
+  overflow-y:auto;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>🔐 Password Generator</h2>
+
+<form method="POST">
+  <input type="number" name="length" placeholder="Length (max 69)" max="69" required>
+  <br>
+  <button type="submit">Generate</button>
+</form>
+
+{% if password %}
+<div class="result" id="password">{{ password }}</div>
+
+<button onclick="copyPassword()">Copy</button>
+<button onclick="savePassword()">Save</button>
+{% endif %}
+
+<hr>
+
+<h3>🔒 Vault</h3>
+
+<input type="password" id="masterPass" placeholder="Enter master password">
+<button onclick="unlockVault()">Unlock</button>
+
+</div>
+
+<!-- MODAL -->
+<div id="vaultModal" class="modal">
+  <div class="modal-content">
+    <h3>Saved Passwords</h3>
+    <div id="savedList"></div>
+
+    <hr>
+
+    <button onclick="changeMasterPassword()">Change Master Password</button>
+    <button onclick="closeVault()">Close</button>
+  </div>
+</div>
+
+<script>
+// COPY
+function copyPassword() {
+  let pass = document.getElementById("password").innerText;
+  navigator.clipboard.writeText(pass);
+  alert("Copied!");
+}
+
+// SAVE
+function savePassword() {
+  let pass = document.getElementById("password").innerText;
+  let label = prompt("Enter label:");
+
+  if (!label) return;
+
+  let saved = JSON.parse(localStorage.getItem("passwords")) || [];
+  saved.push({ label, pass });
+
+  localStorage.setItem("passwords", JSON.stringify(saved));
+  alert("Saved!");
+}
+
+// MASTER PASSWORD
+const MASTER_KEY = "master_password";
+
+function unlockVault() {
+  let input = document.getElementById("masterPass").value;
+  let savedMaster = localStorage.getItem(MASTER_KEY);
+
+  if (!savedMaster) {
+    localStorage.setItem(MASTER_KEY, input);
+    alert("Master password set!");
+    openVault();
+    return;
+  }
+
+  if (input === savedMaster) {
+    openVault();
+  } else {
+    alert("Wrong password!");
+  }
+}
+
+// OPEN MODAL
+function openVault() {
+  document.getElementById("vaultModal").style.display = "flex";
+  renderPasswords();
+}
+
+// CLOSE MODAL
+function closeVault() {
+  document.getElementById("vaultModal").style.display = "none";
+}
+
+// RENDER PASSWORDS
+function renderPasswords() {
+  let saved = JSON.parse(localStorage.getItem("passwords")) || [];
+  let list = document.getElementById("savedList");
+
+  list.innerHTML = "";
+
+  saved.forEach((item, index) => {
+    let div = document.createElement("div");
+
+    div.innerHTML = `
+      <strong>${item.label}</strong><br>
+      ${item.pass}<br>
+      <button onclick="editPassword(${index})">Edit</button>
+      <button onclick="deletePassword(${index})">Delete</button>
+      <hr>
+    `;
+
+    list.appendChild(div);
+  });
+}
+
+// EDIT
+function editPassword(index) {
+  let saved = JSON.parse(localStorage.getItem("passwords")) || [];
+
+  let newLabel = prompt("New label:", saved[index].label);
+  let newPass = prompt("New password:", saved[index].pass);
+
+  if (newLabel && newPass) {
+    saved[index] = { label: newLabel, pass: newPass };
+    localStorage.setItem("passwords", JSON.stringify(saved));
+    renderPasswords();
+  }
+}
+
+// DELETE
+function deletePassword(index) {
+  let saved = JSON.parse(localStorage.getItem("passwords")) || [];
+
+  if (confirm("Delete this password?")) {
+    saved.splice(index, 1);
+    localStorage.setItem("passwords", JSON.stringify(saved));
+    renderPasswords();
+  }
+}
+
+// CHANGE MASTER PASSWORD
+function changeMasterPassword() {
+  let current = prompt("Enter current master password:");
+  let savedMaster = localStorage.getItem(MASTER_KEY);
+
+  if (current !== savedMaster) {
+    alert("Wrong current password!");
+    return;
+  }
+
+  let newPass = prompt("Enter new master password:");
+
+  if (newPass) {
+    localStorage.setItem(MASTER_KEY, newPass);
+    alert("Master password updated!");
+  }
+}
+</script>
+
+</body>
+</html>
