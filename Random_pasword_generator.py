@@ -4,7 +4,7 @@ import random
 app = Flask(__name__)
 
 def generate_password(length):
-    # Limit max length
+    
     if length > 69:
         length = 69
 

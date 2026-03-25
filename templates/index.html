@@ -7,7 +7,7 @@
 <style>
 body {
   font-family: Arial;
-  background: linear-gradient(135deg, #ffffff, #ffffff);
+  background: linear-gradient(135deg, #000000, #ffffff);
   height: 100vh;
   display: flex;
   justify-content: center;
@@ -34,8 +34,8 @@ input, button {
 
 button {
   cursor: pointer;
-  background: #959595;
-  color: white;
+  background: #000000;
+  color: rgb(255, 255, 255);
 }
 
 .result {
@@ -77,7 +77,7 @@ button {
 <h2>🔐 Password Generator</h2>
 
 <form method="POST">
-  <input type="number" name="length" placeholder="Length (max 69)" max="69" required>
+  <input type="number" name="length" placeholder="Max length 69" required>
   <br>
   <button type="submit">Generate</button>
 </form>
